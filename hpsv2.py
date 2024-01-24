@@ -93,7 +93,7 @@ class TextProcessor:
         )
 
 
-class Selector:
+class ImageScore:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -101,81 +101,47 @@ class Selector:
                 "model": ("PS_MODEL",),
                 "image_inputs": ("IMAGE_INPUTS",),
                 "text_inputs": ("TEXT_INPUTS",),
-                "threshold": ("FLOAT", {"max": 1, "step": 0.001}),
-                "limit": ("INT", {"default": 1, "min": 1, "max": 1000}),
             },
             "optional": {
-                "images": ("IMAGE",),
-                "latents": ("LATENT",),
-                "masks": ("MASK",),
+                
             },
         }
 
     CATEGORY = "Haojihui/HPSv2"
-    FUNCTION = "select"
-    RETURN_NAMES = ("SCORES", "IMAGES", "LATENTS", "MASKS")
-    RETURN_TYPES = ("STRING", "IMAGE", "LATENT", "MASK")
+    FUNCTION = "imageScore"
+    RETURN_NAMES = ("SCORES")
+    RETURN_TYPES = ("STRING")
 
-    def select(
+    def imageScore(
         self,
         model,
         image_inputs,
         text_inputs,
-        threshold,
-        limit,
-        images=None,
-        latents=None,
-        masks=None,
     ):
-        with torch.inference_mode():
-            image_inputs = image_inputs.to(model.device, dtype=model.dtype)
-            image_embeds = model.get_image_features(image_inputs)
-            image_embeds = image_embeds / torch.norm(image_embeds, dim=-1, keepdim=True)
+        with torch.no_grad():
+            # Calculate the HPS
+            with torch.cuda.amp.autocast():
+                outputs = model(image_inputs, text_inputs)
+                image_features, text_features = outputs["image_features"], outputs["text_features"]
+                logits_per_image = image_features @ text_features.T
 
-            text_inputs = text_inputs.to(model.device)
-            text_embeds = model.get_text_features(text_inputs)
-            text_embeds = text_embeds / torch.norm(text_embeds, dim=-1, keepdim=True)
+                hps_score = torch.diagonal(logits_per_image).cpu().numpy()
 
-            scores = (text_embeds.float() @ image_embeds.float().T)[0]
+        scores = hps_score[0]
 
-            if scores.shape[0] > 1:
-                scores = model.logit_scale.exp() * scores
-                scores = torch.softmax(scores, dim=-1)
-
-        scores = scores.cpu().tolist()
-        scores = {k: v for k, v in enumerate(scores) if v >= threshold}
-        scores = sorted(scores.items(), key=lambda k: k[1], reverse=True)[:limit]
-        scores_str = ", ".join([str(round(v, 3)) for k, v in scores])
-
-        if images is not None:
-            images = [images[v[0]] for v in scores]
-            images = torch.stack(images) if images else None
-
-        if latents is not None:
-            latents = latents["samples"]
-            latents = [latents[v[0]] for v in scores]
-            latents = {"samples": torch.stack(latents)} if latents else None
-
-        if masks is not None:
-            masks = [masks[v[0]] for v in scores]
-            masks = torch.stack(masks) if masks else None
-
-        if images is None and latents is None and masks is None:
-            raise InterruptProcessingException()
-
-        return (scores_str, images, latents, masks)
+        return (scores)
 
 
 NODE_CLASS_MAPPINGS = {
     "HaojihuiHPSv2Loader": Loader,
     "HaojihuiHPSv2ImageProcessor": ImageProcessor,
     "HaojihuiHPSv2TextProcessor": TextProcessor,
-    "HaojihuiHPSv2Selector": Selector,
+    "HaojihuiHPSv2ImageScore": ImageScore,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "HaojihuiHPSv2Loader": "Loader",
     "HaojihuiHPSv2ImageProcessor": "Image Processor",
     "HaojihuiHPSv2TextProcessor": "Text Processor",
-    "HaojihuiHPSv2Selector": "Selector",
+    "HaojihuiHPSv2ImageScore": "ImageScore",
 }
