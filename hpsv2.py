@@ -76,7 +76,7 @@ class TextProcessor:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "tokenizer": ("TOKENIZER",),
+                "tokenizer": ("PS_TOKENIZER",),
                 "device": (("cuda", "cpu"),),
                 "text": ("STRING", {"multiline": True}),
             },
