@@ -1,5 +1,4 @@
 import torch
-from comfy.model_management import InterruptProcessingException
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 
 class Loader:
