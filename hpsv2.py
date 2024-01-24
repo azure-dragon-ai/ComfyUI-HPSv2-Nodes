@@ -68,16 +68,10 @@ class ImageProcessor:
     RETURN_TYPES = ("IMAGE_INPUTS",)
 
     def process(self, processor, device, images):
-        tensor = images
-        tensor = tensor.cpu().clone()
-        tensor = tensor.squeeze(0)
-        tensor = tensor.permute(1, 2, 0)
-        image = tensor.numpy()
-        image = (image * 255).astype(np.uint8)
-        image = Image.fromarray(image)
+        print(images)
 
         return (
-            processor(image).unsqueeze(0).to(device=device, non_blocking=True),
+            processor(images).unsqueeze(0).to(device=device, non_blocking=True),
         )
 
 
