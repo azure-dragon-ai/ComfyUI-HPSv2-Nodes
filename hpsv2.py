@@ -68,7 +68,7 @@ class ImageProcessor:
 
     def process(self, processor, device, images):
         numpy = images.numpy()
-        image = Image.fromarray(numpy())
+        image = Image.fromarray(numpy)
 
         return (
             processor(image).unsqueeze(0).to(device=device, non_blocking=True),
