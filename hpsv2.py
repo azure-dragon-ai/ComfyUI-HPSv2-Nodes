@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 import os
-from torchvision.transforms
+from torchvision import transforms
 
 # set HF_ENDPOINT=https://hf-mirror.com
 class Loader:
