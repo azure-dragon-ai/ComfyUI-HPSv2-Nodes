@@ -108,8 +108,8 @@ class ImageScore:
 
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "imageScore"
-    RETURN_NAMES = ("SCORES")
-    RETURN_TYPES = ("STRING")
+    RETURN_NAMES = ("SCORES", "SCORES1")
+    RETURN_TYPES = ("STRING", "STRING")
 
     def imageScore(
         self,
@@ -128,7 +128,7 @@ class ImageScore:
 
         scores = hps_score[0]
 
-        return (scores)
+        return (scores, scores)
 
 
 NODE_CLASS_MAPPINGS = {
