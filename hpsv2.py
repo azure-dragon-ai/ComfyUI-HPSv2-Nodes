@@ -1,7 +1,7 @@
 import torch
 from comfy.model_management import InterruptProcessingException
 from transformers import AutoModel, AutoProcessor
-
+from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 
 class Loader:
     @classmethod
@@ -21,10 +21,29 @@ class Loader:
 
     def load(self, path, device, dtype):
         dtype = torch.float32 if device == "cpu" else getattr(torch, dtype)
-        model = AutoModel.from_pretrained(path, torch_dtype=dtype).eval().to(device)
-        processor = AutoProcessor.from_pretrained(path)
+        model, preprocess_train, preprocess_val = create_model_and_transforms(
+            'ViT-H-14',
+            'laion2B-s32B-b79K',
+            precision='amp',
+            device=device,
+            jit=False,
+            force_quick_gelu=False,
+            force_custom_text=False,
+            force_patch_dropout=False,
+            force_image_size=None,
+            pretrained_image=False,
+            image_mean=None,
+            image_std=None,
+            light_augmentation=True,
+            aug_cfg={},
+            output_dict=True,
+            with_score_predictor=False,
+            with_region_predictor=False
+        )
+        #model = AutoModel.from_pretrained(path, torch_dtype=dtype).eval().to(device)
+        #processor = AutoProcessor.from_pretrained(path)
 
-        return (model, processor)
+        return (model, preprocess_val)
 
 
 class ImageProcessor:
