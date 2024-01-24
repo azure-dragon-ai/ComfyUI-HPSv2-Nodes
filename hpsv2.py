@@ -2,7 +2,10 @@ import torch
 from PIL import Image
 import numpy as np
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
+import os
+from torchvision.transforms
 
+# set HF_ENDPOINT=https://hf-mirror.com
 class Loader:
     @classmethod
     def INPUT_TYPES(cls):
@@ -20,6 +23,7 @@ class Loader:
     RETURN_TYPES = ("PS_MODEL", "PS_TOKENIZER", "PS_PROCESSOR")
 
     def load(self, path, device, dtype):
+        os.environ['HF_ENDPOINT'] = "https://hf-mirror.com"
         dtype = torch.float32 if device == "cpu" else getattr(torch, dtype)
         model, preprocess_train, preprocess_val = create_model_and_transforms(
             'ViT-H-14',
@@ -68,10 +72,10 @@ class ImageProcessor:
     RETURN_TYPES = ("IMAGE_INPUTS",)
 
     def process(self, processor, device, images):
-        print(images)
+        image = transforms.ToPILImage(images)
 
         return (
-            processor(images).unsqueeze(0).to(device=device, non_blocking=True),
+            processor(image).unsqueeze(0).to(device=device, non_blocking=True),
         )
 
 
