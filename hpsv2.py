@@ -1,4 +1,5 @@
 import torch
+from PIL import Image
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 
 class Loader:
@@ -66,8 +67,11 @@ class ImageProcessor:
     RETURN_TYPES = ("IMAGE_INPUTS",)
 
     def process(self, processor, device, images):
+        numpy = images.numpy()
+        image = Image.fromarray(numpy())
+
         return (
-            processor(images).unsqueeze(0).to(device=device, non_blocking=True),
+            processor(image).unsqueeze(0).to(device=device, non_blocking=True),
         )
 
 
