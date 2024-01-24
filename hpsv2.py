@@ -1,6 +1,5 @@
 import torch
 from comfy.model_management import InterruptProcessingException
-from transformers import AutoModel, AutoProcessor
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 
 class Loader:
@@ -8,7 +7,7 @@ class Loader:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "path": ("STRING", {"default": "yuvalkirstain/HPSv2_v1"}),
+                "path": ("STRING", {"default": "c:\Work\AI-Service\Score\HPSv2\HPSv2Models\HPS_v2_compressed.pt"}),
                 "device": (("cuda", "cpu"),),
                 "dtype": (("float16", "bfloat16", "float32"),),
             },
@@ -16,8 +15,8 @@ class Loader:
 
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "load"
-    RETURN_NAMES = ("MODEL", "PROCESSOR")
-    RETURN_TYPES = ("PS_MODEL", "PS_PROCESSOR")
+    RETURN_NAMES = ("MODEL", "TOKENIZER", "PROCESSOR")
+    RETURN_TYPES = ("PS_MODEL", "PS_TOKENIZER", "PS_PROCESSOR")
 
     def load(self, path, device, dtype):
         dtype = torch.float32 if device == "cpu" else getattr(torch, dtype)
@@ -43,7 +42,13 @@ class Loader:
         #model = AutoModel.from_pretrained(path, torch_dtype=dtype).eval().to(device)
         #processor = AutoProcessor.from_pretrained(path)
 
-        return (model, preprocess_val)
+        # HPS_v2_compressed.pt
+        checkpoint = torch.load(path, map_location=device)
+        model.load_state_dict(checkpoint['state_dict'])
+        tokenizer = get_tokenizer('ViT-H-14')
+        model = model.to(device)
+        model.eval()
+        return (model, tokenizer, preprocess_val)
 
 
 class ImageProcessor:
@@ -52,6 +57,7 @@ class ImageProcessor:
         return {
             "required": {
                 "processor": ("PS_PROCESSOR",),
+                "device": (("cuda", "cpu"),),
                 "images": ("IMAGE",),
             },
         }
@@ -60,16 +66,9 @@ class ImageProcessor:
     FUNCTION = "process"
     RETURN_TYPES = ("IMAGE_INPUTS",)
 
-    def process(self, processor, images):
+    def process(self, processor, device, images):
         return (
-            processor(
-                images=images,
-                do_rescale=False,
-                padding=True,
-                truncation=True,
-                max_length=77,
-                return_tensors="pt",
-            )["pixel_values"],
+            processor(images).unsqueeze(0).to(device=device, non_blocking=True),
         )
 
 
@@ -78,7 +77,8 @@ class TextProcessor:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "processor": ("PS_PROCESSOR",),
+                "tokenizer": ("TOKENIZER",),
+                "device": (("cuda", "cpu"),),
                 "text": ("STRING", {"multiline": True}),
             },
         }
@@ -87,15 +87,9 @@ class TextProcessor:
     FUNCTION = "process"
     RETURN_TYPES = ("TEXT_INPUTS",)
 
-    def process(self, processor, text):
+    def process(self, tokenizer, device, text):
         return (
-            processor(
-                text=text,
-                padding=True,
-                truncation=True,
-                max_length=77,
-                return_tensors="pt",
-            )["input_ids"],
+            tokenizer([text]).to(device=device, non_blocking=True)
         )
 
 
