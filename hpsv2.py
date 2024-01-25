@@ -134,7 +134,7 @@ class ImageScore:
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "imageScore"
     RETURN_NAMES = ("SCORES", "SCORES1")
-    RETURN_TYPES = ("STRING", "STRING")
+    RETURN_TYPES = ("STRING", "FLOAT")
 
     def imageScore(
         self,
@@ -159,8 +159,9 @@ class ImageScore:
 
                 hps_score = torch.diagonal(logits_per_image).cpu().numpy()
             scores = hps_score[0]
+        scores_str = str(scores)
 
-        return (scores, scores)
+        return (scores_str, scores)
 
 
 NODE_CLASS_MAPPINGS = {
