@@ -110,8 +110,11 @@ class TextProcessor:
         print(prompt)
         ret = tokenizer([prompt]).to(device=device, non_blocking=True)
         print(ret)
+        inputdata = torch.zeros(1)
+        inputdata[0] = ret
+        print(inputdata)
         return (
-            ret
+            inputdata
         )
 
 
@@ -144,8 +147,6 @@ class ImageScore:
             # Calculate the HPS
             with torch.cuda.amp.autocast():
                 print(image_inputs)
-                print(text_tokenizer)
-                text_tokenizer = text_tokenizer.expand([2])
                 print(text_tokenizer)
                 outputs = model(image_inputs, text_tokenizer)
                 image_features, text_features = outputs["image_features"], outputs["text_features"]
