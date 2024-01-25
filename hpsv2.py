@@ -108,8 +108,10 @@ class TextProcessor:
     def process(self, tokenizer, device, text):
         prompt = text
         print(prompt)
+        ret = tokenizer([prompt]).to(device=device, non_blocking=True)
+        print(ret)
         return (
-            tokenizer([prompt]).to(device=device, non_blocking=True)
+            ret
         )
 
 
