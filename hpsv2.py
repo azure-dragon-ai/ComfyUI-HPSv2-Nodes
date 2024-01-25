@@ -110,11 +110,11 @@ class TextProcessor:
         print(prompt)
         ret = tokenizer([prompt]).to(device=device, non_blocking=True)
         print(ret)
-        inputdata = torch.zeros(1)
-        inputdata[0] = ret
-        print(inputdata)
+        array = [];
+        array[0] = ret;
+        print(array)
         return (
-            inputdata
+            array
         )
 
 
