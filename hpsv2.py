@@ -145,6 +145,8 @@ class ImageScore:
             with torch.cuda.amp.autocast():
                 print(image_inputs)
                 print(text_tokenizer)
+                text_tokenizer = text_tokenizer.expand()
+                print(text_tokenizer)
                 outputs = model(image_inputs, text_tokenizer)
                 image_features, text_features = outputs["image_features"], outputs["text_features"]
                 logits_per_image = image_features @ text_features.T
