@@ -73,9 +73,9 @@ class ImageProcessor:
     RETURN_TYPES = ("IMAGE_INPUTS",)
 
     def process(self, processor, device, images):
-        #image = transforms.ToPILImage()(images[0])
-        numpy = images[0].numpy()
-        image = Image.fromarray(numpy)
+        image = transforms.ToPILImage()(images[0])
+        #numpy = images[0].numpy()
+        #image = Image.fromarray(numpy)
 
 
         return (
