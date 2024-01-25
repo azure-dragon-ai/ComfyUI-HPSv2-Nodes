@@ -3,6 +3,8 @@ ComfyUI-HPSv2-Nodes
 
 ComfyUI Nodes for HPSv2, Human Preference Score v2: A Solid Benchmark for Evaluating Human Preferences of Text-to-Image Synthesis
 
+![workflow](https://github.com/azure-dragon-ai/ComfyUI-HPSv2-Nodes/WX20240125-153030@2x.png)
+
 <table border="0">
 	<tbody>
 		<tr>

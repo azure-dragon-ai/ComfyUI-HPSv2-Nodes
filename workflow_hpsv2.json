@@ -1,0 +1,405 @@
+{
+  "last_node_id": 64,
+  "last_link_id": 127,
+  "nodes": [
+    {
+      "id": 53,
+      "type": "HaojihuiHPSv2ImageProcessor",
+      "pos": [
+        612,
+        366
+      ],
+      "size": {
+        "0": 315,
+        "1": 78
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "processor",
+          "type": "PS_PROCESSOR",
+          "link": 100
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 97
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE_INPUTS",
+          "type": "IMAGE_INPUTS",
+          "links": [
+            122
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HaojihuiHPSv2ImageProcessor"
+      },
+      "widgets_values": [
+        "cuda"
+      ]
+    },
+    {
+      "id": 60,
+      "type": "HaojihuiHPSv2TextProcessor",
+      "pos": [
+        654,
+        539
+      ],
+      "size": {
+        "0": 400,
+        "1": 200
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "tokenizer",
+          "type": "PS_TOKENIZER",
+          "link": 115
+        }
+      ],
+      "outputs": [
+        {
+          "name": "TEXT_TOKENIZER",
+          "type": "PS_TEXT_TOKENIZER",
+          "links": [
+            123
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "PROMPT",
+          "type": "PS_PROMPT",
+          "links": [
+            125
+          ],
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HaojihuiHPSv2TextProcessor"
+      },
+      "widgets_values": [
+        "cuda",
+        "1girl"
+      ]
+    },
+    {
+      "id": 62,
+      "type": "HaojihuiHPSv2ImageScore",
+      "pos": [
+        1120,
+        192
+      ],
+      "size": {
+        "0": 315,
+        "1": 118
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "PS_MODEL",
+          "link": 121
+        },
+        {
+          "name": "image_inputs",
+          "type": "IMAGE_INPUTS",
+          "link": 122
+        },
+        {
+          "name": "text_tokenizer",
+          "type": "PS_TEXT_TOKENIZER",
+          "link": 123
+        },
+        {
+          "name": "prompt",
+          "type": "PS_PROMPT",
+          "link": 125
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SCORES",
+          "type": "STRING",
+          "links": [
+            126,
+            127
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "SCORES1",
+          "type": "STRING",
+          "links": null,
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HaojihuiHPSv2ImageScore"
+      },
+      "widgets_values": [
+        "cuda"
+      ]
+    },
+    {
+      "id": 47,
+      "type": "Save Text File",
+      "pos": [
+        1086,
+        400
+      ],
+      "size": {
+        "0": 315,
+        "1": 154
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 126,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Save Text File"
+      },
+      "widgets_values": [
+        "",
+        "./ComfyUI/output/[time(%Y-%m-%d)]",
+        "ComfyUI",
+        "_",
+        4
+      ]
+    },
+    {
+      "id": 64,
+      "type": "ShowText|pysssss",
+      "pos": [
+        1108,
+        639
+      ],
+      "size": {
+        "0": 315,
+        "1": 76
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 127,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": null,
+          "shape": 6
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ShowText|pysssss"
+      },
+      "widgets_values": [
+        "",
+        "0.26"
+      ]
+    },
+    {
+      "id": 52,
+      "type": "HaojihuiHPSv2Loader",
+      "pos": [
+        596,
+        89
+      ],
+      "size": {
+        "0": 315,
+        "1": 146
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "PS_MODEL",
+          "links": [
+            121
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "TOKENIZER",
+          "type": "PS_TOKENIZER",
+          "links": [
+            115
+          ],
+          "shape": 3,
+          "slot_index": 1
+        },
+        {
+          "name": "PROCESSOR",
+          "type": "PS_PROCESSOR",
+          "links": [
+            100
+          ],
+          "shape": 3,
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "HaojihuiHPSv2Loader"
+      },
+      "widgets_values": [
+        "HPSv2Models\\HPS_v2_compressed.pt",
+        "cuda",
+        "float16"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "LoadImage",
+      "pos": [
+        77,
+        130
+      ],
+      "size": {
+        "0": 315,
+        "1": 314
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            97
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "04c04059-1cc6-4a92-af5c-7f3307f0dc6c.jpg",
+        "image"
+      ]
+    }
+  ],
+  "links": [
+    [
+      97,
+      17,
+      0,
+      53,
+      1,
+      "IMAGE"
+    ],
+    [
+      100,
+      52,
+      2,
+      53,
+      0,
+      "PS_PROCESSOR"
+    ],
+    [
+      115,
+      52,
+      1,
+      60,
+      0,
+      "PS_TOKENIZER"
+    ],
+    [
+      121,
+      52,
+      0,
+      62,
+      0,
+      "PS_MODEL"
+    ],
+    [
+      122,
+      53,
+      0,
+      62,
+      1,
+      "IMAGE_INPUTS"
+    ],
+    [
+      123,
+      60,
+      0,
+      62,
+      2,
+      "PS_TEXT_TOKENIZER"
+    ],
+    [
+      125,
+      60,
+      1,
+      62,
+      3,
+      "PS_PROMPT"
+    ],
+    [
+      126,
+      62,
+      0,
+      47,
+      0,
+      "STRING"
+    ],
+    [
+      127,
+      62,
+      0,
+      64,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}
