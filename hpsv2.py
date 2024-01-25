@@ -24,6 +24,7 @@ class Loader:
 
     def load(self, path, device, dtype):
         os.environ['HF_ENDPOINT'] = "https://hf-mirror.com"
+        os.environ['HPS_ROOT'] = "c:\Work\AI-Service\Score\HPSv2\HPSv2Models"
         dtype = torch.float32 if device == "cpu" else getattr(torch, dtype)
         model, preprocess_train, preprocess_val = create_model_and_transforms(
             'ViT-H-14',
