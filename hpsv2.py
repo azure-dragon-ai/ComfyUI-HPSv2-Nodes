@@ -73,7 +73,7 @@ class ImageProcessor:
     RETURN_TYPES = ("IMAGE_INPUTS",)
 
     def process(self, processor, device, images):
-        image = transforms.ToPILImage(images)
+        image = transforms.ToPILImage()(images)
 
         return (
             processor(image).unsqueeze(0).to(device=device, non_blocking=True),
