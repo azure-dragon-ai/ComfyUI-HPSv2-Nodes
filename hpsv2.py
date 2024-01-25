@@ -139,6 +139,8 @@ class ImageScore:
         with torch.no_grad():
             # Calculate the HPS
             with torch.cuda.amp.autocast():
+                print(image_inputs)
+                print(text_inputs)
                 outputs = model(image_inputs, text_inputs)
                 image_features, text_features = outputs["image_features"], outputs["text_features"]
                 logits_per_image = image_features @ text_features.T
