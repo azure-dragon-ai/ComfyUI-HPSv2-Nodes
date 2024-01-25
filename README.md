@@ -1,6 +1,8 @@
 # ComfyUI-HPSv2-Nodes
 ComfyUI-HPSv2-Nodes
 
+ComfyUI Nodes for HPSv2, Human Preference Score v2: A Solid Benchmark for Evaluating Human Preferences of Text-to-Image Synthesis
+
 <table border="0">
 	<tbody>
 		<tr>
