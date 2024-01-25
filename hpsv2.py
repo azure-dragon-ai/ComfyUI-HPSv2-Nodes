@@ -102,19 +102,16 @@ class TextProcessor:
 
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "process"
-    RETURN_NAMES = ("TEXT_TOKENIZER")
-    RETURN_TYPES = ("PS_TEXT_TOKENIZER",)
+    RETURN_NAMES = ("TEXT_TOKENIZER", "PROMPT")
+    RETURN_TYPES = ("PS_TEXT_TOKENIZER", "PS_PROMPT")
 
     def process(self, tokenizer, device, text):
         prompt = text
         print(prompt)
         ret = tokenizer([prompt]).to(device=device, non_blocking=True)
         print(ret)
-        array = [];
-        array[0] = ret;
-        print(array)
         return (
-            array
+            ret, prompt
         )
 
 
@@ -126,6 +123,8 @@ class ImageScore:
                 "model": ("PS_MODEL",),
                 "image_inputs": ("IMAGE_INPUTS",),
                 "text_tokenizer": ("PS_TEXT_TOKENIZER",),
+                "prompt": ("PS_PROMPT",),
+                "device": (("cuda", "cpu"),),
             },
             "optional": {
                 
@@ -142,11 +141,17 @@ class ImageScore:
         model,
         image_inputs,
         text_tokenizer,
+        prompt,
+        device
     ):
+        tokenizer = get_tokenizer('ViT-H-14')
         with torch.no_grad():
             # Calculate the HPS
             with torch.cuda.amp.autocast():
                 print(image_inputs)
+                print(text_tokenizer)
+                print(prompt)
+                text_tokenizer = tokenizer([prompt]).to(device=device, non_blocking=True)
                 print(text_tokenizer)
                 outputs = model(image_inputs, text_tokenizer)
                 image_features, text_features = outputs["image_features"], outputs["text_features"]
