@@ -102,8 +102,8 @@ class TextProcessor:
 
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "process"
-    RETURN_NAMES = ("TEXT_INPUTS")
-    RETURN_TYPES = ("PS_TEXT_INPUTS",)
+    RETURN_NAMES = ("TEXT_TOKENIZER")
+    RETURN_TYPES = ("PS_TEXT_TOKENIZER",)
 
     def process(self, tokenizer, device, text):
         prompt = text
@@ -122,7 +122,7 @@ class ImageScore:
             "required": {
                 "model": ("PS_MODEL",),
                 "image_inputs": ("IMAGE_INPUTS",),
-                "text_inputs": ("PS_TEXT_INPUTS",),
+                "text_tokenizer": ("PS_TEXT_TOKENIZER",),
             },
             "optional": {
                 
@@ -138,14 +138,14 @@ class ImageScore:
         self,
         model,
         image_inputs,
-        text_inputs,
+        text_tokenizer,
     ):
         with torch.no_grad():
             # Calculate the HPS
             with torch.cuda.amp.autocast():
                 print(image_inputs)
-                print(text_inputs)
-                outputs = model(image_inputs, text_inputs)
+                print(text_tokenizer)
+                outputs = model(image_inputs, text_tokenizer)
                 image_features, text_features = outputs["image_features"], outputs["text_features"]
                 logits_per_image = image_features @ text_features.T
 
