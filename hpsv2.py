@@ -74,11 +74,13 @@ class ImageProcessor:
 
     def process(self, processor, device, images):
         print(images.shape)
-        imageTensor = transforms.ToTensor()(images[0])
+        numpy = images[0].numpy()
+        print(numpy.shape)
+        imageTensor = transforms.ToTensor()(numpy)
         print("imageTensor ", imageTensor.shape)
         image = transforms.ToPILImage()(imageTensor)
 
-        #numpy = images[0].numpy()
+        
         #image = Image.fromarray(numpy)
 
 
