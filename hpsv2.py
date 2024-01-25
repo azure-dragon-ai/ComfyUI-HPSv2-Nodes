@@ -160,8 +160,6 @@ class ImageScore:
                 hps_score = torch.diagonal(logits_per_image).cpu().numpy()
             scores = hps_score[0]
 
-        scores = "score:" . scores
-
         return (scores, scores)
 
 
