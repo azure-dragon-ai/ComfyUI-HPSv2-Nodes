@@ -102,7 +102,8 @@ class TextProcessor:
 
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "process"
-    RETURN_TYPES = ("TEXT_INPUTS",)
+    RETURN_NAMES = ("TEXT_INPUTS")
+    RETURN_TYPES = ("PS_TEXT_INPUTS",)
 
     def process(self, tokenizer, device, text):
         prompt = text
@@ -119,7 +120,7 @@ class ImageScore:
             "required": {
                 "model": ("PS_MODEL",),
                 "image_inputs": ("IMAGE_INPUTS",),
-                "text_inputs": ("TEXT_INPUTS",),
+                "text_inputs": ("PS_TEXT_INPUTS",),
             },
             "optional": {
                 
@@ -147,8 +148,9 @@ class ImageScore:
                 logits_per_image = image_features @ text_features.T
 
                 hps_score = torch.diagonal(logits_per_image).cpu().numpy()
+            scores = hps_score[0]
 
-        scores = "score:" . hps_score[0]
+        scores = "score:" . scores
 
         return (scores, scores)
 
