@@ -105,9 +105,10 @@ class TextProcessor:
     RETURN_TYPES = ("TEXT_INPUTS",)
 
     def process(self, tokenizer, device, text):
-        print(text)
+        prompt = text
+        print(prompt)
         return (
-            tokenizer([text]).to(device=device, non_blocking=True)
+            tokenizer([prompt]).to(device=device, non_blocking=True)
         )
 
 
