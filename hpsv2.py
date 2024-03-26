@@ -166,7 +166,7 @@ class ImageScore:
             scores = hps_score[0]
         scores_str = str(scores)
 
-        return (scores_str, scores)
+        return (scores_str, scores_str)
 
 class SaveImage:
     def __init__(self):
