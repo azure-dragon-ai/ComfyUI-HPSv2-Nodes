@@ -204,7 +204,7 @@ class SaveImage:
             metadata = None
             if not args.disable_metadata:
                 metadata = PngInfo()
-                metadata.add_text("score", json.dumps(score))
+                #metadata.add_text("score", json.dumps(score))
                 if prompt is not None:
                     metadata.add_text("prompt", json.dumps(prompt))
                 if extra_pnginfo is not None:
