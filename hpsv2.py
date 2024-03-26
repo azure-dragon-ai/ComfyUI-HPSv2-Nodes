@@ -138,7 +138,7 @@ class ImageScore:
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "imageScore"
     RETURN_NAMES = ("SCORES", "SCORES1")
-    RETURN_TYPES = ("STRING", "FLOAT")
+    RETURN_TYPES = ("PS_SCORES", "FLOAT")
 
     def imageScore(
         self,
@@ -176,11 +176,15 @@ class SaveImage:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": 
-                    {"images": ("IMAGE", ),
-                     "filename_prefix": ("STRING", {"default": "Hjh"})},
+        return {
+                "required": 
+                {
+                    "images": ("IMAGE", ),
+                    "filename_prefix": ("STRING", {"default": "Hjh"}),
+                    "score": ("PS_SCORES",),
+                },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
-                }
+            }
 
     RETURN_TYPES = ()
     FUNCTION = "save_images"
@@ -189,7 +193,7 @@ class SaveImage:
 
     CATEGORY = "Haojihui/HPSv2"
 
-    def save_images(self, images, filename_prefix="ComfyUI", prompt=None, extra_pnginfo=None):
+    def save_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
         filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
@@ -206,7 +210,7 @@ class SaveImage:
                         metadata.add_text(x, json.dumps(extra_pnginfo[x]))
 
             filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
-            file = f"{filename_with_batch_num}_{counter:05}_.png"
+            file = f"{filename_with_batch_num}_{counter:05}_{score}_.png"
             img.save(os.path.join(full_output_folder, file), pnginfo=metadata, compress_level=self.compress_level)
             results.append({
                 "filename": file,
