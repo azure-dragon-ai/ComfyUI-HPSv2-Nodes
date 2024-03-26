@@ -139,7 +139,7 @@ class ImageScore:
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "imageScore"
     RETURN_NAMES = ("SCORES", "SCORES1")
-    RETURN_TYPES = ("PS_SCORES", "FLOAT")
+    RETURN_TYPES = ("PS_SCORES", "STRING")
 
     def imageScore(
         self,
