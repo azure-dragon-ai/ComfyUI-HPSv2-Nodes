@@ -4,6 +4,10 @@ import numpy as np
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 import os
 from torchvision import transforms
+import folder_paths
+from comfy.cli_args import args
+from PIL.PngImagePlugin import PngInfo
+import json
 
 # set HF_ENDPOINT=https://hf-mirror.com
 class Loader:
@@ -174,7 +178,7 @@ class SaveImage:
     def INPUT_TYPES(s):
         return {"required": 
                     {"images": ("IMAGE", ),
-                     "filename_prefix": ("STRING", {"default": "ComfyUI"})},
+                     "filename_prefix": ("STRING", {"default": "Hjh"})},
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
 
