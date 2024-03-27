@@ -139,7 +139,7 @@ class ImageScore:
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "imageScore"
     RETURN_NAMES = ("SCORES", "SCORES1")
-    RETURN_TYPES = ("STRING", "FLOAT")
+    RETURN_TYPES = ("PS_SCORES", "STRING")
 
     def imageScore(
         self,
@@ -166,7 +166,7 @@ class ImageScore:
             scores = hps_score[0]
         scores_str = str(scores)
 
-        return (scores_str, scores)
+        return (scores_str, scores_str)
 
 class SaveImage:
     def __init__(self):
@@ -182,7 +182,7 @@ class SaveImage:
                 {
                     "images": ("IMAGE", ),
                     "filename_prefix": ("STRING", {"default": "Hjh"}),
-                    "score": ("STRING",),
+                    "score": ("PS_SCORES",),
                 },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
             }
@@ -237,7 +237,7 @@ class SaveWebpImage:
                 {
                     "images": ("IMAGE", ),
                     "filename_prefix": ("STRING", {"default": "Hjh"}),
-                    "score": ("STRING",),
+                    "score": ("PS_SCORES",),
                 },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
             }
