@@ -182,7 +182,7 @@ class SaveImage:
                 {
                     "images": ("IMAGE", ),
                     "filename_prefix": ("STRING", {"default": "Hjh"}),
-                    "score": ("PS_SCORES",),
+                    "score": ("PS_SCORES", {"default": ""}),
                 },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
             }
@@ -196,6 +196,7 @@ class SaveImage:
 
     def save_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
         filename_prefix += self.prefix_append
+        filename_prefix += "_" + score
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
         for (batch_number, image) in enumerate(images):
@@ -212,7 +213,7 @@ class SaveImage:
                         metadata.add_text(x, json.dumps(extra_pnginfo[x]))
 
             filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
-            file = f"{filename_with_batch_num}_{counter:05}_{score}_.png"
+            file = f"{filename_with_batch_num}_{counter:05}_.png"
             img.save(os.path.join(full_output_folder, file), pnginfo=metadata, compress_level=self.compress_level)
             results.append({
                 "filename": file,
@@ -237,7 +238,7 @@ class SaveWebpImage:
                 {
                     "images": ("IMAGE", ),
                     "filename_prefix": ("STRING", {"default": "Hjh"}),
-                    "score": ("PS_SCORES",),
+                    "score": ("PS_SCORES", {"default": ""}),
                 },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
             }
@@ -251,6 +252,7 @@ class SaveWebpImage:
 
     def save_webp_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
         filename_prefix += self.prefix_append
+        filename_prefix += "_" + score
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
         for (batch_number, image) in enumerate(images):
@@ -266,7 +268,7 @@ class SaveWebpImage:
                         metadata.add_text(x, json.dumps(extra_pnginfo[x]))
 
             filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
-            file = f"{filename_with_batch_num}_{counter:05}_{score}_.webp"
+            file = f"{filename_with_batch_num}_{counter:05}_.webp"
             webp.save_image(img, os.path.join(full_output_folder, file), quality=80)
             results.append({
                 "filename": file,
