@@ -182,7 +182,10 @@ class SaveImage:
                 {
                     "images": ("IMAGE", ),
                     "filename_prefix": ("STRING", {"default": "Hjh"}),
-                    "score": ("PS_SCORES", {"default": ""}),
+                },
+                "optional":
+                {
+                    "score": ("PS_SCORES",),
                 },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
             }
@@ -238,7 +241,10 @@ class SaveWebpImage:
                 {
                     "images": ("IMAGE", ),
                     "filename_prefix": ("STRING", {"default": "Hjh"}),
-                    "score": ("PS_SCORES", {"default": ""}),
+                },
+                "optional":
+                {
+                    "score": ("PS_SCORES",),
                 },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
             }
