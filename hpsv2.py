@@ -357,13 +357,18 @@ class SaveWEBP:
     methods = {"default": 4, "fastest": 0, "slowest": 6}
     @classmethod
     def INPUT_TYPES(s):
-        return {"required":
+        return {
+                "required":
                     {"images": ("IMAGE", ),
                      "filename_prefix": ("STRING", {"default": "Hjh"}),
                      "lossless": ("BOOLEAN", {"default": True}),
                      "quality": ("INT", {"default": 80, "min": 0, "max": 100}),
                      "method": (list(s.methods.keys()),),
                      },
+                "optional":
+                {
+                    "scores": ("STRING", {"forceInput": True}),
+                },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
 
@@ -374,7 +379,7 @@ class SaveWEBP:
 
     CATEGORY = "Haojihui/HPSv2"
 
-    def save_images(self, images, filename_prefix, lossless, quality, method, prompt=None, extra_pnginfo=None):
+    def save_images(self, images, filename_prefix, lossless, quality, method, scores=None, prompt=None, extra_pnginfo=None):
         method = self.methods.get(method)
         filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
@@ -397,7 +402,10 @@ class SaveWEBP:
 
         c = len(pil_images)
         for i in range(0, c):
-            file = f"{filename}_{counter:05}_.webp"
+            score = ""
+            if scores is not None:
+                score = scores[i]
+            file = f"{filename}_{score}_{counter:05}_.webp"
             pil_images[i].save(os.path.join(full_output_folder, file), exif=metadata, lossless=lossless, quality=quality, method=method)
             results.append({
                 "filename": file,
