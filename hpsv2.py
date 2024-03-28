@@ -347,7 +347,7 @@ class SaveWEBP:
     def INPUT_TYPES(s):
         return {"required":
                     {"images": ("IMAGE", ),
-                     "filename_prefix": ("STRING", {"default": "ComfyUI"}),
+                     "filename_prefix": ("STRING", {"default": "Hjh"}),
                      "lossless": ("BOOLEAN", {"default": True}),
                      "quality": ("INT", {"default": 80, "min": 0, "max": 100}),
                      "method": (list(s.methods.keys()),),
