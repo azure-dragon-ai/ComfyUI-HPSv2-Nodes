@@ -174,7 +174,8 @@ class ImageScores:
         return {
             "required": {
                 "model": ("PS_MODEL",),
-                "image_inputs": ("IMAGE_INPUTS",),
+                "processor": ("PS_PROCESSOR",),
+                "images": ("IMAGE",),
                 "text_tokenizer": ("PS_TEXT_TOKENIZER",),
                 "prompt": ("PS_PROMPT",),
                 "device": (("cuda", "cpu"),),
@@ -186,38 +187,49 @@ class ImageScores:
 
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "imageScores"
-    RETURN_NAMES = ("SCORES", "SCORES1")
-    RETURN_TYPES = ("STRING", "FLOAT")
+    RETURN_NAMES = ("SCORES")
+    RETURN_TYPES = ("STRING")
 
     def imageScores(
         self,
         model,
-        image_inputs,
+        processor,
+        images,
         text_tokenizer,
         prompt,
         device
     ):
         tokenizer = get_tokenizer('ViT-H-14')
-        with torch.no_grad():
-            # Calculate the HPS
-            with torch.cuda.amp.autocast():
-                print(image_inputs)
-                print(text_tokenizer)
-                print(prompt)
-                text_tokenizer = tokenizer([prompt]).to(device=device, non_blocking=True)
-                print(text_tokenizer)
-                outputs = model(image_inputs, text_tokenizer)
-                image_features, text_features = outputs["image_features"], outputs["text_features"]
-                logits_per_image = image_features @ text_features.T
+        list_scores = []
+        for image in images:
+            with torch.no_grad():
+                # Calculate the HPS
+                with torch.cuda.amp.autocast():
+                    print(image)
+                    print(text_tokenizer)
+                    print(prompt)
+                    numpy = image.numpy()
+                    print(numpy.shape)
+                    imageTensor = transforms.ToTensor()(numpy)
+                    print("imageTensor ", imageTensor.shape)
+                    image1 = transforms.ToPILImage()(imageTensor)
 
-                hps_score = torch.diagonal(logits_per_image).cpu().numpy()
-                torch.cuda.empty_cache()
-            scores = hps_score[0]
-        scores_str = str(scores)
+                    #image = Image.fromarray(numpy)
+                    image_inputs = processor(image1).unsqueeze(0).to(device=device, non_blocking=True)
 
-        list_scores = [scores_str, scores_str]
+                    text_tokenizer = tokenizer([prompt]).to(device=device, non_blocking=True)
+                    print(text_tokenizer)
+                    outputs = model(image_inputs, text_tokenizer)
+                    image_features, text_features = outputs["image_features"], outputs["text_features"]
+                    logits_per_image = image_features @ text_features.T
 
-        return (list_scores, scores)
+                    hps_score = torch.diagonal(logits_per_image).cpu().numpy()
+                    torch.cuda.empty_cache()
+                scores = hps_score[0]
+            scores_str = str(scores)
+            list_scores.append(scores_str)
+
+        return (list_scores)
 
 class SaveImage:
     def __init__(self):
