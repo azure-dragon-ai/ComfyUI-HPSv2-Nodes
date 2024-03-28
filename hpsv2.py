@@ -182,6 +182,7 @@ class SaveImage:
                 {
                     "images": ("IMAGE", ),
                     "filename_prefix": ("STRING", {"default": "Hjh"}),
+                    "score1": ("STRING", {"forceInput": True}),
                 },
                 "optional":
                 {
