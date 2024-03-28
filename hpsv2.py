@@ -187,8 +187,8 @@ class ImageScores:
 
     CATEGORY = "Haojihui/HPSv2"
     FUNCTION = "imageScores"
-    RETURN_NAMES = ("SCORES")
-    RETURN_TYPES = ("STRING")
+    RETURN_NAMES = ("SCORES", "SCORES1")
+    RETURN_TYPES = ("STRING", "STRING")
 
     def imageScores(
         self,
@@ -229,7 +229,7 @@ class ImageScores:
             list_scores.append(scores_str)
         torch.cuda.empty_cache()
 
-        return (list_scores)
+        return (list_scores, json.dumps(list_scores))
 
 class SaveImage:
     def __init__(self):
