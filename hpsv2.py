@@ -262,7 +262,9 @@ class SaveImage:
 
     def save_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
         filename_prefix += self.prefix_append
-        filename_prefix += "_" + score
+        if score != "":
+            filename_prefix += "_" + score
+        
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
         for (batch_number, image) in enumerate(images):
@@ -321,7 +323,8 @@ class SaveWebpImage:
 
     def save_webp_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
         filename_prefix += self.prefix_append
-        filename_prefix += "_" + score
+        if score != "":
+            filename_prefix += "_" + score
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
         results = list()
         for (batch_number, image) in enumerate(images):
@@ -405,7 +408,10 @@ class SaveWEBP:
             score = ""
             if scores is not None:
                 score = scores[i]
-            file = f"{filename}_{score}_{counter:05}_.webp"
+            if score != "":
+                file = f"{filename}_{score}_{counter:05}_.webp"
+            else:
+                file = f"{filename}_{counter:05}_.webp"
             pil_images[i].save(os.path.join(full_output_folder, file), exif=metadata, lossless=lossless, quality=quality, method=method)
             results.append({
                 "filename": file,
