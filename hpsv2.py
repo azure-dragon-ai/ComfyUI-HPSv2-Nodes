@@ -348,11 +348,9 @@ class SaveWEBP:
         return {"required":
                     {"images": ("IMAGE", ),
                      "filename_prefix": ("STRING", {"default": "ComfyUI"}),
-                     "fps": ("FLOAT", {"default": 6.0, "min": 0.01, "max": 1000.0, "step": 0.01}),
                      "lossless": ("BOOLEAN", {"default": True}),
                      "quality": ("INT", {"default": 80, "min": 0, "max": 100}),
                      "method": (list(s.methods.keys()),),
-                     # "num_frames": ("INT", {"default": 0, "min": 0, "max": 8192}),
                      },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
@@ -364,7 +362,7 @@ class SaveWEBP:
 
     CATEGORY = "Haojihui/HPSv2"
 
-    def save_images(self, images, fps, filename_prefix, lossless, quality, method, num_frames=0, prompt=None, extra_pnginfo=None):
+    def save_images(self, images, filename_prefix, lossless, quality, method, prompt=None, extra_pnginfo=None):
         method = self.methods.get(method)
         filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
@@ -385,13 +383,10 @@ class SaveWEBP:
                     metadata[inital_exif] = "{}:{}".format(x, json.dumps(extra_pnginfo[x]))
                     inital_exif -= 1
 
-        if num_frames == 0:
-            num_frames = len(pil_images)
-
         c = len(pil_images)
-        for i in range(0, c, num_frames):
+        for i in range(0, c):
             file = f"{filename}_{counter:05}_.webp"
-            pil_images[i].save(os.path.join(full_output_folder, file), save_all=True, duration=int(1000.0/fps), append_images=pil_images[i + 1:i + num_frames], exif=metadata, lossless=lossless, quality=quality, method=method)
+            pil_images[i].save(os.path.join(full_output_folder, file), exif=metadata, lossless=lossless, quality=quality, method=method)
             results.append({
                 "filename": file,
                 "subfolder": subfolder,
@@ -399,7 +394,7 @@ class SaveWEBP:
             })
             counter += 1
 
-        animated = num_frames != 1
+        animated = False
         return { "ui": { "images": results, "animated": (animated,) } }
     
 class SaveAnimatedWEBP:
