@@ -163,6 +163,7 @@ class ImageScore:
                 logits_per_image = image_features @ text_features.T
 
                 hps_score = torch.diagonal(logits_per_image).cpu().numpy()
+                torch.cuda.empty_cache()
             scores = hps_score[0]
         scores_str = str(scores)
 
