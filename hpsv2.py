@@ -85,7 +85,6 @@ class ImageProcessor:
         print("imageTensor ", imageTensor.shape)
         image = transforms.ToPILImage()(imageTensor)
 
-        
         #image = Image.fromarray(numpy)
 
 
@@ -142,6 +141,55 @@ class ImageScore:
     RETURN_TYPES = ("STRING", "FLOAT")
 
     def imageScore(
+        self,
+        model,
+        image_inputs,
+        text_tokenizer,
+        prompt,
+        device
+    ):
+        tokenizer = get_tokenizer('ViT-H-14')
+        with torch.no_grad():
+            # Calculate the HPS
+            with torch.cuda.amp.autocast():
+                print(image_inputs)
+                print(text_tokenizer)
+                print(prompt)
+                text_tokenizer = tokenizer([prompt]).to(device=device, non_blocking=True)
+                print(text_tokenizer)
+                outputs = model(image_inputs, text_tokenizer)
+                image_features, text_features = outputs["image_features"], outputs["text_features"]
+                logits_per_image = image_features @ text_features.T
+
+                hps_score = torch.diagonal(logits_per_image).cpu().numpy()
+                torch.cuda.empty_cache()
+            scores = hps_score[0]
+        scores_str = str(scores)
+
+        return (scores_str, scores)
+    
+class ImageScores:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("PS_MODEL",),
+                "image_inputs": ("IMAGE_INPUTS",),
+                "text_tokenizer": ("PS_TEXT_TOKENIZER",),
+                "prompt": ("PS_PROMPT",),
+                "device": (("cuda", "cpu"),),
+            },
+            "optional": {
+                
+            },
+        }
+
+    CATEGORY = "Haojihui/HPSv2"
+    FUNCTION = "imageScores"
+    RETURN_NAMES = ("SCORES", "SCORES1")
+    RETURN_TYPES = ("STRING", "FLOAT")
+
+    def imageScores(
         self,
         model,
         image_inputs,
@@ -359,6 +407,7 @@ NODE_CLASS_MAPPINGS = {
     "HaojihuiHPSv2ImageProcessor": ImageProcessor,
     "HaojihuiHPSv2TextProcessor": TextProcessor,
     "HaojihuiHPSv2ImageScore": ImageScore,
+    "HaojihuiHPSv2ImageScores": ImageScores,
     "HaojihuiHPSv2SaveImage": SaveImage,
     "HaojihuiHPSv2SaveWebpImage": SaveWebpImage,
 }
@@ -368,6 +417,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "HaojihuiHPSv2ImageProcessor": "Image Processor",
     "HaojihuiHPSv2TextProcessor": "Text Processor",
     "HaojihuiHPSv2ImageScore": "ImageScore",
+    "HaojihuiHPSv2ImageScores": "ImageScores",
     "HaojihuiHPSv2SaveImage": "SaveImage",
     "HaojihuiHPSv2SaveWebpImage": "SaveWebpImage",
 }
