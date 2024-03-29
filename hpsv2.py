@@ -228,8 +228,10 @@ class ImageScores:
             scores_str = str(scores)
             list_scores.append(scores_str)
         torch.cuda.empty_cache()
+        list_scores1 = list_scores
+        list_scores1.sort()
 
-        return (list_scores, json.dumps(list_scores.sort()))
+        return (list_scores, json.dumps(list_scores1))
 
 class SaveImage:
     def __init__(self):
