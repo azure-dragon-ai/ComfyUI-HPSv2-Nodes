@@ -380,6 +380,7 @@ class SaveWEBP:
                 "optional":
                 {
                     "scores": ("STRING", {"forceInput": True}),
+                    "orderby": (["asc", "desc"],),
                 },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
@@ -391,7 +392,7 @@ class SaveWEBP:
 
     CATEGORY = "Haojihui/HPSv2"
 
-    def save_images(self, images, filename_prefix, lossless, quality, method, scores=None, prompt=None, extra_pnginfo=None):
+    def save_images(self, images, filename_prefix, lossless, quality, method, scores=None, orderby=None,prompt=None, extra_pnginfo=None):
         method = self.methods.get(method)
         filename_prefix += self.prefix_append
         full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
@@ -430,7 +431,11 @@ class SaveWEBP:
             })
             counter += 1
 
-        results.sort(key=self.takeScore, reverse=True)
+        if orderby is not None:
+            if orderby == "asc":
+                results.sort(key=self.takeScore)
+            else:
+                results.sort(key=self.takeScore, reverse=True)
         animated = False
         return { "ui": { "images": results, "animated": (animated,) } }
     
