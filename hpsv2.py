@@ -427,7 +427,7 @@ class SaveWEBP:
         animated = False
         return { "ui": { "images": results, "animated": (animated,) } }
     
-    def takeScore(elem):
+    def takeScore(self, elem):
         return elem["score"]
 
 class SaveAnimatedWEBP:
