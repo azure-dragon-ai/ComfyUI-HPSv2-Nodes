@@ -229,7 +229,7 @@ class ImageScores:
             list_scores.append(scores_str)
         torch.cuda.empty_cache()
 
-        return (list_scores, json.dumps(list_scores))
+        return (list_scores, json.dumps(list_scores.sort()))
 
 class SaveImage:
     def __init__(self):
@@ -416,13 +416,18 @@ class SaveWEBP:
             results.append({
                 "filename": file,
                 "subfolder": subfolder,
-                "type": self.type
+                "type": self.type,
+                "score": score
             })
             counter += 1
 
+        results.sort(self.f)
         animated = False
         return { "ui": { "images": results, "animated": (animated,) } }
     
+    def f(a, b):
+        return a.score > b.score
+
 class SaveAnimatedWEBP:
     def __init__(self):
         self.output_dir = folder_paths.get_output_directory()
