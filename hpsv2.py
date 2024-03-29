@@ -200,7 +200,7 @@ class ImageScores:
         device
     ):
         tokenizer = get_tokenizer('ViT-H-14')
-        list_scores = []
+        list_scores = list()
         for image in images:
             with torch.no_grad():
                 # Calculate the HPS
@@ -421,7 +421,7 @@ class SaveWEBP:
             })
             counter += 1
 
-        results.sort(self.f)
+        results.sort(cmp=self.f)
         animated = False
         return { "ui": { "images": results, "animated": (animated,) } }
     
