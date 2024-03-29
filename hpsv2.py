@@ -178,6 +178,7 @@ class ImageScores:
                 "images": ("IMAGE",),
                 "text_tokenizer": ("PS_TEXT_TOKENIZER",),
                 "prompt": ("PS_PROMPT",),
+                "orderby": (["asc", "desc"],),
                 "device": (("cuda", "cpu"),),
             },
             "optional": {
@@ -197,6 +198,7 @@ class ImageScores:
         images,
         text_tokenizer,
         prompt,
+        orderby,
         device
     ):
         tokenizer = get_tokenizer('ViT-H-14')
@@ -229,7 +231,10 @@ class ImageScores:
             list_scores.append(scores_str)
         torch.cuda.empty_cache()
         list_scores1 = list_scores
-        list_scores1.sort()
+        if orderby == "asc":
+            list_scores1.sort()
+        else:
+            list_scores1.sort(reverse=True)
 
         return (list_scores, json.dumps(list_scores1))
 
@@ -423,7 +428,7 @@ class SaveWEBP:
             })
             counter += 1
 
-        results.sort(key=self.takeScore)
+        results.sort(key=self.takeScore, reverse=True)
         animated = False
         return { "ui": { "images": results, "animated": (animated,) } }
     
