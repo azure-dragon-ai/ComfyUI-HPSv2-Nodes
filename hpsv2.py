@@ -230,7 +230,9 @@ class ImageScores:
             scores_str = str(scores)
             list_scores.append(scores_str)
         torch.cuda.empty_cache()
-        list_scores1 = list_scores
+        list_scores1 = []
+        for i in range(len(list_scores)):
+            list_scores1.append(list_scores[i])
         if orderby == "asc":
             list_scores1.sort()
         else:
