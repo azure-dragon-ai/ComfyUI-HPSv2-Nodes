@@ -423,12 +423,12 @@ class SaveWEBP:
             })
             counter += 1
 
-        results.sort(cmp=self.f)
+        results.sort(key=self.takeScore)
         animated = False
         return { "ui": { "images": results, "animated": (animated,) } }
     
-    def f(a, b):
-        return a.score > b.score
+    def takeScore(elem):
+        return elem["score"]
 
 class SaveAnimatedWEBP:
     def __init__(self):
