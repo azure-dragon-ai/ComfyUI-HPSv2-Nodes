@@ -1,0 +1,12 @@
+a111:
+    base_path: //NAS65A682/SD-Share/
+
+    checkpoints: //NAS65A682/SD-Share/models/Stable-diffusion
+    configs: //NAS65A682/SD-Share/models/Stable-diffusion
+    vae: //NAS65A682/SD-Share/models/VAE
+    loras: //NAS65A682/SD-Share/models/Lora
+    upscale_models: |
+                  //NAS65A682/SD-Share/models/ESRGAN
+                  //NAS65A682/SD-Share/models/SwinIR
+    embeddings: //NAS65A682/SD-Share/embeddings
+    controlnet: //NAS65A682/SD-Share/models/ControlNet

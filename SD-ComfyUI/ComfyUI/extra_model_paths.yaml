@@ -1,0 +1,42 @@
+#Rename this to extra_model_paths.yaml and ComfyUI will load it
+
+#config for a1111 ui
+#all you have to do is change the base_path to where yours is installed
+a1111:
+    base_path: C:/Work/SD-webui-10002-Flexible/
+
+    checkpoints: //NAS65A682/SD-Share/models/Stable-diffusion
+    configs: //NAS65A682/SD-Share/models/Stable-diffusion
+    blip: //NAS65A682/SD-Share/models/Blip
+    clip: //NAS65A682/SD-Share/models/Clip_vision
+    clip_vision: //NAS65A682/SD-Share/models/Clip_vision
+    clipseg: //NAS65A682/SD-Share/models/Clip_seg
+    controlnet: //NAS65A682/SD-Share/models/ControlNet
+    embeddings: //NAS65A682/SD-Share/models/embeddings
+    facexlib: //NAS65A682/SD-Share/models/facexlib
+    hypernetworks: //NAS65A682/SD-Share/models/hypernetworks
+    inpaint: //NAS65A682/SD-Share/models/inpaint
+    insightface: //NAS65A682/SD-Share/models/insightface
+    instantid: //NAS65A682/SD-Share/models/IP-Adapter/InstantID
+    ipadapter: //NAS65A682/SD-Share/models/IP-Adapter
+    loras: |
+         //NAS65A682/SD-Share/models/Lora
+         //NAS65A682/SD-Share/models/LyCORIS
+    rembg: //NAS65A682/SD-Share/models/rembg
+    sams: //NAS65A682/SD-Share/models/SAM
+    style_models: |
+                  //NAS65A682/SD-Share/models/Sdxl_styles
+                  //NAS65A682/SD-Share/models/ControlNet
+    unet: //NAS65A682/SD-Share/models/UNET
+    upscale_models: |
+                  //NAS65A682/SD-Share/models/ESRGAN
+                  //NAS65A682/SD-Share/models/RealESRGAN
+                  //NAS65A682/SD-Share/models/SwinIR
+    vae: //NAS65A682/SD-Share/models/VAE
+    vae_approx: //NAS65A682/SD-Share/models/VAE_approx
+
+#other_ui:
+#    base_path: path/to/ui
+#    checkpoints: models/checkpoints
+#    gligen: models/gligen
+#    custom_nodes: path/custom_nodes

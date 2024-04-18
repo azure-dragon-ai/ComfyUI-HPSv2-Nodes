@@ -1,0 +1,16 @@
+mycomfyui:
+    base_path: //NAS65A682/SD-Share/
+    checkpoints: //NAS65A682/SD-Share/models/checkpoints
+    configs: //NAS65A682/SD-Share/models/configs
+    loras: //NAS65A682/SD-Share/models/loras
+    vae: //NAS65A682/SD-Share/models/vae
+    clip: //NAS65A682/SD-Share/models/clip
+    clip_vision: //NAS65A682/SD-Share/models/clip_vision
+    style_models: //NAS65A682/SD-Share/models/style_models
+    embeddings: //NAS65A682/SD-Share/models/embeddings
+    diffusers: //NAS65A682/SD-Share/models/diffusers
+    controlnet: //NAS65A682/SD-Share/models/controlnet
+    gligen: //NAS65A682/SD-Share/models/gligen
+    upscale_models: //NAS65A682/SD-Share/models/upscale_models
+    hypernetworks: //NAS65A682/SD-Share/models/hypernetworks
+    # custom_nodes: //NAS65A682/SD-Share/custom_nodes

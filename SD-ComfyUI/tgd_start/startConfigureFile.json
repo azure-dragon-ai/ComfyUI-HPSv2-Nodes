@@ -1,0 +1,1 @@
+["--extra-model-paths-config \"C:\\Work\\SD-ComfyUI\\tgd_start\\WebUIConfigure.yaml\"","--output-directory \"\\\\NAS0C4B37\\Work\\SD-WebUI\\ComfyUI\"","--auto-launch","--windows-standalone-build","--cuda-device 0","--enable-cors-header *","--listen 192.168.31.198 --port 20002","--quick-test-for-ci","--highvram"]
