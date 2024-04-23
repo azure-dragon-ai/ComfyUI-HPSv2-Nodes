@@ -4,6 +4,11 @@ import numpy as np
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 import os
 from torchvision import transforms
+import folder_paths
+from comfy.cli_args import args
+from PIL.PngImagePlugin import PngInfo
+import json
+import webp
 
 # set HF_ENDPOINT=https://hf-mirror.com
 class Loader:
@@ -80,7 +85,6 @@ class ImageProcessor:
         print("imageTensor ", imageTensor.shape)
         image = transforms.ToPILImage()(imageTensor)
 
-        
         #image = Image.fromarray(numpy)
 
 
@@ -158,17 +162,362 @@ class ImageScore:
                 logits_per_image = image_features @ text_features.T
 
                 hps_score = torch.diagonal(logits_per_image).cpu().numpy()
+                torch.cuda.empty_cache()
             scores = hps_score[0]
         scores_str = str(scores)
 
         return (scores_str, scores)
+    
+class ImageScores:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("PS_MODEL",),
+                "processor": ("PS_PROCESSOR",),
+                "images": ("IMAGE",),
+                "text_tokenizer": ("PS_TEXT_TOKENIZER",),
+                "prompt": ("PS_PROMPT",),
+                "orderby": (["asc", "desc"],),
+                "device": (("cuda", "cpu"),),
+            },
+            "optional": {
+                
+            },
+        }
 
+    CATEGORY = "Haojihui/HPSv2"
+    FUNCTION = "imageScores"
+    RETURN_NAMES = ("SCORES", "SCORES1")
+    RETURN_TYPES = ("STRING", "STRING")
+
+    def imageScores(
+        self,
+        model,
+        processor,
+        images,
+        text_tokenizer,
+        prompt,
+        orderby,
+        device
+    ):
+        tokenizer = get_tokenizer('ViT-H-14')
+        list_scores = list()
+        for image in images:
+            with torch.no_grad():
+                # Calculate the HPS
+                with torch.cuda.amp.autocast():
+                    print(image)
+                    print(text_tokenizer)
+                    print(prompt)
+                    numpy = image.numpy()
+                    print(numpy.shape)
+                    imageTensor = transforms.ToTensor()(numpy)
+                    print("imageTensor ", imageTensor.shape)
+                    image1 = transforms.ToPILImage()(imageTensor)
+
+                    #image = Image.fromarray(numpy)
+                    image_inputs = processor(image1).unsqueeze(0).to(device=device, non_blocking=True)
+
+                    text_tokenizer = tokenizer([prompt]).to(device=device, non_blocking=True)
+                    print(text_tokenizer)
+                    outputs = model(image_inputs, text_tokenizer)
+                    image_features, text_features = outputs["image_features"], outputs["text_features"]
+                    logits_per_image = image_features @ text_features.T
+
+                    hps_score = torch.diagonal(logits_per_image).cpu().numpy()
+                scores = hps_score[0]
+            scores_str = str(scores)
+            list_scores.append(scores_str)
+        torch.cuda.empty_cache()
+        list_scores1 = []
+        for i in range(len(list_scores)):
+            list_scores1.append(list_scores[i])
+        if orderby == "asc":
+            list_scores1.sort()
+        else:
+            list_scores1.sort(reverse=True)
+
+        return (list_scores, json.dumps(list_scores1))
+
+class SaveImage:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+        self.type = "output"
+        self.prefix_append = ""
+        self.compress_level = 4
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+                "required": 
+                {
+                    "images": ("IMAGE", ),
+                    "filename_prefix": ("STRING", {"default": "Hjh"}),
+                },
+                "optional":
+                {
+                    "score": ("STRING", {"forceInput": True}),
+                },
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+            }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save_images"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "Haojihui/HPSv2"
+
+    def save_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
+        filename_prefix += self.prefix_append
+        if score != "":
+            filename_prefix += "_" + score
+        
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        results = list()
+        for (batch_number, image) in enumerate(images):
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            metadata = None
+            if not args.disable_metadata:
+                metadata = PngInfo()
+                metadata.add_text("score", json.dumps(score))
+                if prompt is not None:
+                    metadata.add_text("prompt", json.dumps(prompt))
+                if extra_pnginfo is not None:
+                    for x in extra_pnginfo:
+                        metadata.add_text(x, json.dumps(extra_pnginfo[x]))
+
+            filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
+            file = f"{filename_with_batch_num}_{counter:05}_.png"
+            img.save(os.path.join(full_output_folder, file), pnginfo=metadata, compress_level=self.compress_level)
+            results.append({
+                "filename": file,
+                "subfolder": subfolder,
+                "type": self.type
+            })
+            counter += 1
+
+        return { "ui": { "images": results } }
+    
+class SaveWebpImage:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+        self.type = "output"
+        self.prefix_append = ""
+        self.compress_level = 4
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+                "required": 
+                {
+                    "images": ("IMAGE", ),
+                    "filename_prefix": ("STRING", {"default": "Hjh"}),
+                },
+                "optional":
+                {
+                    "score": ("STRING", {"forceInput": True}),
+                },
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+            }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save_webp_images"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "Haojihui/HPSv2"
+
+    def save_webp_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
+        filename_prefix += self.prefix_append
+        if score != "":
+            filename_prefix += "_" + score
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        results = list()
+        for (batch_number, image) in enumerate(images):
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            metadata = None
+            if not args.disable_metadata:
+                metadata = PngInfo()
+                if prompt is not None:
+                    metadata.add_text("prompt", json.dumps(prompt))
+                if extra_pnginfo is not None:
+                    for x in extra_pnginfo:
+                        metadata.add_text(x, json.dumps(extra_pnginfo[x]))
+
+            filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
+            file = f"{filename_with_batch_num}_{counter:05}_.webp"
+            webp.save_image(img, os.path.join(full_output_folder, file), quality=80)
+            results.append({
+                "filename": file,
+                "subfolder": subfolder,
+                "type": self.type
+            })
+            counter += 1
+
+        return { "ui": { "images": results } }
+
+class SaveWEBP:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+        self.type = "output"
+        self.prefix_append = ""
+
+    methods = {"default": 4, "fastest": 0, "slowest": 6}
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+                "required":
+                    {"images": ("IMAGE", ),
+                     "filename_prefix": ("STRING", {"default": "Hjh"}),
+                     "lossless": ("BOOLEAN", {"default": True}),
+                     "quality": ("INT", {"default": 80, "min": 0, "max": 100}),
+                     "method": (list(s.methods.keys()),),
+                     },
+                "optional":
+                {
+                    "scores": ("STRING", {"forceInput": True}),
+                    "orderby": (["asc", "desc"],),
+                },
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save_images"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "Haojihui/HPSv2"
+
+    def save_images(self, images, filename_prefix, lossless, quality, method, scores=None, orderby=None,prompt=None, extra_pnginfo=None):
+        method = self.methods.get(method)
+        filename_prefix += self.prefix_append
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        results = list()
+        pil_images = []
+        for image in images:
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            pil_images.append(img)
+
+        metadata = pil_images[0].getexif()
+        if not args.disable_metadata:
+            if prompt is not None:
+                metadata[0x0110] = "prompt:{}".format(json.dumps(prompt))
+            if extra_pnginfo is not None:
+                inital_exif = 0x010f
+                for x in extra_pnginfo:
+                    metadata[inital_exif] = "{}:{}".format(x, json.dumps(extra_pnginfo[x]))
+                    inital_exif -= 1
+
+        c = len(pil_images)
+        for i in range(0, c):
+            score = ""
+            if scores is not None:
+                score = scores[i]
+            if score != "":
+                file = f"{filename}_{score}_{counter:05}_.webp"
+            else:
+                file = f"{filename}_{counter:05}_.webp"
+            pil_images[i].save(os.path.join(full_output_folder, file), exif=metadata, lossless=lossless, quality=quality, method=method)
+            results.append({
+                "filename": file,
+                "subfolder": subfolder,
+                "type": self.type,
+                "score": score
+            })
+            counter += 1
+
+        if orderby is not None:
+            if orderby == "asc":
+                results.sort(key=self.takeScore)
+            else:
+                results.sort(key=self.takeScore, reverse=True)
+        animated = False
+        return { "ui": { "images": results, "animated": (animated,) } }
+    
+    def takeScore(self, elem):
+        return elem["score"]
+
+class SaveAnimatedWEBP:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+        self.type = "output"
+        self.prefix_append = ""
+
+    methods = {"default": 4, "fastest": 0, "slowest": 6}
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {"images": ("IMAGE", ),
+                     "filename_prefix": ("STRING", {"default": "ComfyUI"}),
+                     "fps": ("FLOAT", {"default": 6.0, "min": 0.01, "max": 1000.0, "step": 0.01}),
+                     "lossless": ("BOOLEAN", {"default": True}),
+                     "quality": ("INT", {"default": 80, "min": 0, "max": 100}),
+                     "method": (list(s.methods.keys()),),
+                     # "num_frames": ("INT", {"default": 0, "min": 0, "max": 8192}),
+                     },
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save_images"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "Haojihui/HPSv2"
+
+    def save_images(self, images, fps, filename_prefix, lossless, quality, method, num_frames=0, prompt=None, extra_pnginfo=None):
+        method = self.methods.get(method)
+        filename_prefix += self.prefix_append
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        results = list()
+        pil_images = []
+        for image in images:
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            pil_images.append(img)
+
+        metadata = pil_images[0].getexif()
+        if not args.disable_metadata:
+            if prompt is not None:
+                metadata[0x0110] = "prompt:{}".format(json.dumps(prompt))
+            if extra_pnginfo is not None:
+                inital_exif = 0x010f
+                for x in extra_pnginfo:
+                    metadata[inital_exif] = "{}:{}".format(x, json.dumps(extra_pnginfo[x]))
+                    inital_exif -= 1
+
+        if num_frames == 0:
+            num_frames = len(pil_images)
+
+        c = len(pil_images)
+        for i in range(0, c, num_frames):
+            file = f"{filename}_{counter:05}_.webp"
+            pil_images[i].save(os.path.join(full_output_folder, file), save_all=True, duration=int(1000.0/fps), append_images=pil_images[i + 1:i + num_frames], exif=metadata, lossless=lossless, quality=quality, method=method)
+            results.append({
+                "filename": file,
+                "subfolder": subfolder,
+                "type": self.type
+            })
+            counter += 1
+
+        animated = num_frames != 1
+        return { "ui": { "images": results, "animated": (animated,) } }
 
 NODE_CLASS_MAPPINGS = {
     "HaojihuiHPSv2Loader": Loader,
     "HaojihuiHPSv2ImageProcessor": ImageProcessor,
     "HaojihuiHPSv2TextProcessor": TextProcessor,
     "HaojihuiHPSv2ImageScore": ImageScore,
+    "HaojihuiHPSv2ImageScores": ImageScores,
+    "HaojihuiHPSv2SaveImage": SaveImage,
+    "HaojihuiHPSv2SaveWebpImage": SaveWebpImage,
+    "HaojihuiHPSv2SaveWEBP": SaveWEBP,
+    "HaojihuiHPSv2SaveAnimatedWEBP": SaveAnimatedWEBP,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -176,4 +525,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "HaojihuiHPSv2ImageProcessor": "Image Processor",
     "HaojihuiHPSv2TextProcessor": "Text Processor",
     "HaojihuiHPSv2ImageScore": "ImageScore",
+    "HaojihuiHPSv2ImageScores": "ImageScores",
+    "HaojihuiHPSv2SaveImage": "SaveImage",
+    "HaojihuiHPSv2SaveWebpImage": "SaveWebpImage",
+    "HaojihuiHPSv2SaveWEBP": "SaveWEBP",
+    "HaojihuiHPSv2SaveAnimatedWEBP": "SaveAnimatedWEBP",
 }
