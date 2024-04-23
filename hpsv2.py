@@ -1,5 +1,6 @@
 import torch
 from PIL import Image
+from PIL import ImageOps
 import numpy as np
 from hpsv2.src.open_clip import create_model_and_transforms, get_tokenizer
 import os
@@ -11,6 +12,26 @@ import json
 import webp
 
 # set HF_ENDPOINT=https://hf-mirror.com
+class GetImageSize:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+            }
+        }
+
+    RETURN_TYPES = ("INT", "INT")
+    RETURN_NAMES = ("width", "height")
+
+    FUNCTION = "get_size"
+
+    CATEGORY = "Haojihui/Image"
+
+    def get_size(self, image):
+        _, height, width, _ = image.shape
+        return (width, height)
+
 class Loader:
     @classmethod
     def INPUT_TYPES(cls):
@@ -267,7 +288,7 @@ class SaveImage:
 
     OUTPUT_NODE = True
 
-    CATEGORY = "Haojihui/HPSv2"
+    CATEGORY = "Haojihui/Image"
 
     def save_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
         filename_prefix += self.prefix_append
@@ -328,7 +349,7 @@ class SaveWebpImage:
 
     OUTPUT_NODE = True
 
-    CATEGORY = "Haojihui/HPSv2"
+    CATEGORY = "Haojihui/Image"
 
     def save_webp_images(self, images, filename_prefix="Hjh", score="", prompt=None, extra_pnginfo=None):
         filename_prefix += self.prefix_append
@@ -390,7 +411,7 @@ class SaveWEBP:
 
     OUTPUT_NODE = True
 
-    CATEGORY = "Haojihui/HPSv2"
+    CATEGORY = "Haojihui/Image"
 
     def save_images(self, images, filename_prefix, lossless, quality, method, scores=None, orderby=None,prompt=None, extra_pnginfo=None):
         method = self.methods.get(method)
@@ -468,7 +489,7 @@ class SaveAnimatedWEBP:
 
     OUTPUT_NODE = True
 
-    CATEGORY = "Haojihui/HPSv2"
+    CATEGORY = "Haojihui/Image"
 
     def save_images(self, images, fps, filename_prefix, lossless, quality, method, num_frames=0, prompt=None, extra_pnginfo=None):
         method = self.methods.get(method)
@@ -508,7 +529,107 @@ class SaveAnimatedWEBP:
         animated = num_frames != 1
         return { "ui": { "images": results, "animated": (animated,) } }
 
+#ComfyUI原始SaveImage节点变更存图格式
+class SaveImageWebp:
+    def __init__(self):
+        self.output_dir = folder_paths.get_output_directory()
+        self.type = "output"
+        self.prefix_append = ""
+        self.compress_level = 4
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required": 
+                    {"images": ("IMAGE", ),
+                     "filename_prefix": ("STRING", {"default": "ComfyUI"}),
+                     "lossless": ("BOOLEAN", {"default": False}),
+                     "quality": ("INT", {"default": 85, "min": 0, "max": 100})},
+                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+                }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save_images"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "Haojihui/Image"
+
+    def save_images(self, images, lossless, quality, filename_prefix, prompt=None, extra_pnginfo=None):
+        filename_prefix += self.prefix_append
+        full_output_folder, filename, counter, subfolder, filename_prefix = folder_paths.get_save_image_path(filename_prefix, self.output_dir, images[0].shape[1], images[0].shape[0])
+        results = list()
+        for (batch_number, image) in enumerate(images):
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            metadata = img.getexif()
+            
+            if not args.disable_metadata:
+                if prompt is not None:
+                    metadata[0x0110] = "prompt:{}".format(json.dumps(prompt))
+                if extra_pnginfo is not None:
+                    inital_exif = 0x010f
+                    for x in extra_pnginfo:
+                        metadata[inital_exif] = "{}:{}".format(x, json.dumps(extra_pnginfo[x]))
+                        inital_exif -= 1
+
+            filename_with_batch_num = filename.replace("%batch_num%", str(batch_number))
+            file = f"{filename_with_batch_num}_{counter:05}_.webp"
+            img.save(os.path.join(full_output_folder, file),method=6, exif=metadata, lossless=lossless, quality=quality, compress_level=self.compress_level)
+            results.append({
+                "filename": file,
+                "subfolder": subfolder,
+                "type": self.type
+            })
+            counter += 1
+
+        return { "ui": { "images": results } }
+
+#指定短边保持比例缩放图片
+def img_to_tensor(input):
+    i = ImageOps.exif_transpose(input)
+    image = i.convert("RGB")
+    image = np.array(image).astype(np.float32) / 255.0
+    tensor = torch.from_numpy(image)[None,]
+    return tensor
+
+def tensor_to_img(image):
+    image = image[0]
+    i = 255. * image.cpu().numpy()
+    img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8)).convert("RGB")
+    return img
+
+class ScaleShort:
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "size": ("INT", {"default": 512, "min": 16, "max": 2048, "step": 16}),
+                "crop_face": ("BOOLEAN", {"default": False}),
+        }}
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "scale_short"
+
+    CATEGORY = "Haojihui/Image"
+
+    def scale_short(self, image, size, crop_face):
+        input_image = tensor_to_img(image)
+        short_side = min(input_image.width, input_image.height)
+        resize = float(short_side / size)
+        new_size = (int(input_image.width // resize), int(input_image.height // resize))
+        input_image = input_image.resize(new_size, Image.Resampling.LANCZOS)
+        if crop_face:
+            new_width = int(np.shape(input_image)[1] // 32 * 32)
+            new_height = int(np.shape(input_image)[0] // 32 * 32)
+            input_image = input_image.resize([new_width, new_height], Image.Resampling.LANCZOS)
+        return (img_to_tensor(input_image),)
+
 NODE_CLASS_MAPPINGS = {
+    "ScaleShort": ScaleShort,
+    "SaveImageWebp": SaveImageWebp,
+    "GetImageSize": GetImageSize,
     "HaojihuiHPSv2Loader": Loader,
     "HaojihuiHPSv2ImageProcessor": ImageProcessor,
     "HaojihuiHPSv2TextProcessor": TextProcessor,
