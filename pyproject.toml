@@ -1,0 +1,14 @@
+[project]
+name = "hpsv2-nodes"
+description = "ComfyUI Nodes for HPSv2, Human Preference Score v2: A Solid Benchmark for Evaluating Human Preferences of Text-to-Image Synthesis"
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/azure-dragon-ai/ComfyUI-HPSv2-Nodes"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-HPSv2-Nodes"
+Icon = ""
